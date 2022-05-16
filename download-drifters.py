@@ -12,7 +12,7 @@ subset_nb_drifters = 17324  # you can scale up/down this number (maximum value o
 # Note: If you are running this notebook on a local computer and have already downloaded the individual NetCDF files 
 # independently of this notebook, you can move/copy these files to the folder destination shown below, 
 # or alternatively change the variable 'folder' to your folder with the data
-folder =  '/data/raw/'
+folder =  '/tmp/drifters/'
 input_url = 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/'
 
 # load the complete list of drifter IDs from the AOML https
