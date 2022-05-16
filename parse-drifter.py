@@ -64,7 +64,8 @@ meta = {
 	"end_lat": float(ds.end_lat.data[0]),
 	"drogue_lost_date": parse_date(int(ds.drogue_lost_date.data[0])),
 	"typedeath": float(ds.typedeath.data[0]),
-	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip()
+	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip(),
+	"source_url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1]
 }
 
 try:
