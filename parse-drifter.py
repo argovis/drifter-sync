@@ -65,7 +65,13 @@ meta = {
 	"drogue_lost_date": parse_date(int(ds.drogue_lost_date.data[0])),
 	"typedeath": float(ds.typedeath.data[0]),
 	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip(),
-	"source_url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1]
+	"data_type": "drifter",
+	"date_updated_argovis": datetime.datetime.now(),
+	"source_info": [{
+		"source": ["gdp"],
+		"source_url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1],
+	}],
+	"data_keys": ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
 }
 
 try:
@@ -84,13 +90,7 @@ for i in range(meta['rowsize']):
 			"coordinates": [float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])]
 		},
 		"basin": find_basin(float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])),
-		"data_type": "drifter",
-		"date_updated_argovis": datetime.datetime.now(),
-		"source_info": [{
-			"source": ["gdp"]
-		}],
 		"timestamp": parse_date(int(ds.time.data[0][i])),
-		"data_keys": ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"],
 		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
 	}
 	point['data'][0] = [float(x) for x in point['data'][0]]
