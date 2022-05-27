@@ -4,14 +4,14 @@ from pymongo import MongoClient
 
 client = MongoClient('mongodb://database/argo')
 db = client.argo
+basins = xarray.open_dataset('parameters/basinmask_01.nc')
 
-def find_basin(lon, lat):
+def find_basin(basins, lon, lat):
     # for a given lon, lat,
     # identify the basin from the lookup table.
     # choose the nearest non-nan grid point.
 
     gridspacing = 0.5
-    basins = xarray.open_dataset('parameters/basinmask_01.nc')
 
     basin = basins['BASIN_TAG'].sel(LONGITUDE=lon, LATITUDE=lat, method="nearest").to_dict()['data']
     if math.isnan(basin):
@@ -33,7 +33,6 @@ def find_basin(lon, lat):
         else:
             grids.sort(key=lambda tup: tup[1])
             basin = grids[0][0]
-    basins.close()
     return int(basin)
 
 def parse_date(timestamp):
@@ -48,15 +47,29 @@ def parse_date(timestamp):
 
 	return t
 
+def getprop(ds, var, prop):
+    try:
+        return getattr(ds[var],prop)
+    except:
+        return None
+
 ds = xarray.open_dataset(sys.argv[1], decode_times=False)
 
-# generate metadata object
+bail = True
+try:
+	xx = parse_date(int(ds.deploy_date.data[0]))
+except:
+	print('parsing', sys.argv[1])
+	bail = False
+if bail:
+	sys.exit()
+
+# generate metadata object - one per drifer file
 meta = {
 	"_id": ds.ID.data[0].decode("utf-8").strip(), 
 	"rowsize": int(ds.rowsize.data[0]),
 	"WMO": float(ds.WMO.data[0]),
 	"expno": float(ds.expno.data[0]),
-	"deploy_date": parse_date(int(ds.deploy_date.data[0])),
 	"deploy_lon": float(ds.deploy_lon.data[0]),
 	"deploy_lat": float(ds.deploy_lat.data[0]),
 	"end_date": parse_date(int(ds.end_date.data[0])),
@@ -73,6 +86,12 @@ meta = {
 	}],
 	"data_keys": ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
 }
+meta['units'] = [getprop(ds,v,'units') for v in meta['data_keys']]
+meta['long_name'] = [getprop(ds,v,'long_name') for v in meta['data_keys']]
+try:
+	meta['deploy_date'] = parse_date(int(ds.deploy_date.data[0]))
+except:
+	meta['deploy_date'] = None
 
 try:
 	db['drifterMeta'].insert_one(meta)
@@ -84,14 +103,14 @@ except BaseException as err:
 # generate point data objects
 for i in range(meta['rowsize']):
 	point = {
-		"_id": ds.ID.data[0].decode("utf-8").strip() + '_' + str(i),
+		"metadata": ds.ID.data[0].decode("utf-8").strip(),
 		"geolocation": {
 			"type": "Point",
 			"coordinates": [float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])]
 		},
-		"basin": find_basin(float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])),
+		"basin": find_basin(basins, float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])),
 		"timestamp": parse_date(int(ds.time.data[0][i])),
-		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
+		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
 	}
 	point['data'][0] = [float(x) for x in point['data'][0]]
 	try:
