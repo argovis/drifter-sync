@@ -55,15 +55,6 @@ def getprop(ds, var, prop):
 
 ds = xarray.open_dataset(sys.argv[1], decode_times=False)
 
-bail = True
-try:
-	xx = parse_date(int(ds.deploy_date.data[0]))
-except:
-	print('parsing', sys.argv[1])
-	bail = False
-if bail:
-	sys.exit()
-
 # generate metadata object - one per drifer file
 meta = {
 	"_id": ds.ID.data[0].decode("utf-8").strip(), 
