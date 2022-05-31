@@ -59,15 +59,15 @@ ds = xarray.open_dataset(sys.argv[1], decode_times=False)
 meta = {
 	"_id": ds.ID.data[0].decode("utf-8").strip(), 
 	"rowsize": int(ds.rowsize.data[0]),
-	"WMO": float(ds.WMO.data[0]),
-	"expno": float(ds.expno.data[0]),
-	"deploy_lon": float(ds.deploy_lon.data[0]),
-	"deploy_lat": float(ds.deploy_lat.data[0]),
+	"WMO": round(float(ds.WMO.data[0]),6),
+	"expno": round(float(ds.expno.data[0]),6),
+	"deploy_lon": round(float(ds.deploy_lon.data[0]),6),
+	"deploy_lat": round(float(ds.deploy_lat.data[0]),6),
 	"end_date": parse_date(int(ds.end_date.data[0])),
-	"end_lon": float(ds.end_lon.data[0]),
-	"end_lat": float(ds.end_lat.data[0]),
+	"end_lon": round(float(ds.end_lon.data[0]),6),
+	"end_lat": round(float(ds.end_lat.data[0]),6),
 	"drogue_lost_date": parse_date(int(ds.drogue_lost_date.data[0])),
-	"typedeath": float(ds.typedeath.data[0]),
+	"typedeath": round(float(ds.typedeath.data[0]),6),
 	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip(),
 	"data_type": "drifter",
 	"date_updated_argovis": datetime.datetime.now(),
@@ -97,13 +97,13 @@ for i in range(meta['rowsize']):
 		"metadata": ds.ID.data[0].decode("utf-8").strip(),
 		"geolocation": {
 			"type": "Point",
-			"coordinates": [float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])]
+			"coordinates": [round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)]
 		},
-		"basin": find_basin(basins, float(ds.longitude.data[0][i]), float(ds.latitude.data[0][i])),
+		"basin": find_basin(basins, round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)),
 		"timestamp": parse_date(int(ds.time.data[0][i])),
 		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
 	}
-	point['data'][0] = [float(x) for x in point['data'][0]]
+	point['data'][0] = [round(float(x),6) for x in point['data'][0]]
 	try:
 		db['drifters'].insert_one(point)
 	except BaseException as err:
