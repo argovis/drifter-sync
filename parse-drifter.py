@@ -59,15 +59,15 @@ ds = xarray.open_dataset(sys.argv[1], decode_times=False)
 meta = {
 	"_id": ds.ID.data[0].decode("utf-8").strip(), 
 	"rowsize": int(ds.rowsize.data[0]),
-	"WMO": round(float(ds.WMO.data[0]),6),
-	"expno": round(float(ds.expno.data[0]),6),
-	"deploy_lon": round(float(ds.deploy_lon.data[0]),6),
-	"deploy_lat": round(float(ds.deploy_lat.data[0]),6),
-	"end_date": parse_date(int(ds.end_date.data[0])),
-	"end_lon": round(float(ds.end_lon.data[0]),6),
-	"end_lat": round(float(ds.end_lat.data[0]),6),
-	"drogue_lost_date": parse_date(int(ds.drogue_lost_date.data[0])),
-	"typedeath": round(float(ds.typedeath.data[0]),6),
+	"WMO": int(ds.WMO.data[0]),
+	"expno": int(ds.expno.data[0]),
+	"deploy_lon": float(ds.deploy_lon.data[0]),
+	"deploy_lat": float(ds.deploy_lat.data[0]),
+	"end_date": parse_date(round(float(ds.end_date.data[0]),6)),
+	"end_lon": float(ds.end_lon.data[0]),
+	"end_lat": float(ds.end_lat.data[0]),
+	"drogue_lost_date": parse_date(round(float(ds.drogue_lost_date.data[0]),6)),
+	"typedeath": int(ds.typedeath.data[0]),
 	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip(),
 	"data_type": "drifter",
 	"date_updated_argovis": datetime.datetime.now(),
@@ -80,12 +80,12 @@ meta = {
 meta['units'] = [getprop(ds,v,'units') for v in meta['data_keys']]
 meta['long_name'] = [getprop(ds,v,'long_name') for v in meta['data_keys']]
 try:
-	meta['deploy_date'] = parse_date(int(ds.deploy_date.data[0]))
+	meta['deploy_date'] = parse_date(round(float(ds.deploy_date.data[0]),6))
 except:
 	meta['deploy_date'] = None
 
 try:
-	db['drifterMeta'].insert_one(meta)
+	db['drifterMetax'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -94,18 +94,29 @@ except BaseException as err:
 # generate point data objects
 for i in range(meta['rowsize']):
 	point = {
-		"metadata": ds.ID.data[0].decode("utf-8").strip(),
+		"_id": ds.ID.data[0].decode("utf-8").strip() + '_' + str(i),
+		"platform": ds.ID.data[0].decode("utf-8").strip(),
 		"geolocation": {
 			"type": "Point",
 			"coordinates": [round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)]
 		},
 		"basin": find_basin(basins, round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)),
-		"timestamp": parse_date(int(ds.time.data[0][i])),
+		"timestamp": parse_date(float(ds.time.data[0][i])),
 		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
 	}
-	point['data'][0] = [round(float(x),6) for x in point['data'][0]]
+	# cast from numpy classes to native python:
+	for i in range(16):
+		if i < 6:
+			# first 6 are all numpy32 bit floats
+			point['data'][0][i] = round(float(point['data'][0][i]),6)
+		elif i == 6:
+			# gap is a ns timedelta64, encode this as number of seconds
+			point['data'][0][i] = round(float(point['data'][0][i]),6)
+		elif i > 6:
+			# rest are numpy64 bit floats
+			point['data'][0][i] = float(point['data'][0][i])
 	try:
-		db['drifters'].insert_one(point)
+		db['driftersx'].insert_one(point)
 	except BaseException as err:
 		print('error: db write failure')
 		print(err)
