@@ -104,7 +104,7 @@ for i in range(meta['rowsize']):
 		"timestamp": parse_date(float(ds.time.data[0][i])),
 		"data": [[ds.ve.data[0][i], ds.vn.data[0][i], ds.err_lon.data[0][i], ds.err_lat.data[0][i], ds.err_ve.data[0][i], ds.err_vn.data[0][i], ds.gap.data[0][i], ds.sst.data[0][i], ds.sst1.data[0][i], ds.sst2.data[0][i],ds.err_sst.data[0][i], ds.err_sst1.data[0][i], ds.err_sst2.data[0][i], ds.flg_sst.data[0][i], ds.flg_sst1.data[0][i], ds.flg_sst2.data[0][i]]]
 	}
-	# cast from numpy classes to native python:
+	# cast from numpy classes to native python, and replace null placeholders
 	for i in range(16):
 		if i < 6:
 			# first 6 are all numpy32 bit floats
@@ -115,8 +115,10 @@ for i in range(meta['rowsize']):
 		elif i > 6:
 			# rest are numpy64 bit floats
 			point['data'][0][i] = float(point['data'][0][i])
+		if point['data'][0][i] == -1e34:
+			point['data'][0][i] = None
 	try:
-		db['driftersx'].insert_one(point)
+		db['drifters'].insert_one(point)
 	except BaseException as err:
 		print('error: db write failure')
 		print(err)
