@@ -58,8 +58,9 @@ ds = xarray.open_dataset(sys.argv[1], decode_times=False)
 # generate metadata object - one per drifer file
 meta = {
 	"_id": ds.ID.data[0].decode("utf-8").strip(), 
+	"platform": ds.ID.data[0].decode("utf-8").strip(), 
 	"rowsize": int(ds.rowsize.data[0]),
-	"WMO": int(ds.WMO.data[0]),
+	"wmo": int(ds.WMO.data[0]),
 	"expno": int(ds.expno.data[0]),
 	"deploy_lon": float(ds.deploy_lon.data[0]),
 	"deploy_lat": float(ds.deploy_lat.data[0]),
@@ -71,9 +72,9 @@ meta = {
 	"typebuoy": ds.typebuoy.data[0].decode("utf-8").strip(),
 	"data_type": "drifter",
 	"date_updated_argovis": datetime.datetime.now(),
-	"source_info": [{
+	"source": [{
 		"source": ["gdp"],
-		"source_url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1],
+		"url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1],
 	}],
 	"data_keys": ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
 }
@@ -95,7 +96,7 @@ except BaseException as err:
 for i in range(meta['rowsize']):
 	point = {
 		"_id": ds.ID.data[0].decode("utf-8").strip() + '_' + str(i),
-		"platform": ds.ID.data[0].decode("utf-8").strip(),
+		"metadata": ds.ID.data[0].decode("utf-8").strip(),
 		"geolocation": {
 			"type": "Point",
 			"coordinates": [round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)]
@@ -118,7 +119,7 @@ for i in range(meta['rowsize']):
 		if point['data'][0][i] == -1e34:
 			point['data'][0][i] = None
 	try:
-		db['drifters'].insert_one(point)
+		db['drifterx'].insert_one(point)
 	except BaseException as err:
 		print('error: db write failure')
 		print(err)
