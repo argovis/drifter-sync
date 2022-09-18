@@ -103,9 +103,6 @@ for metaID in metaIDs:
 
 
 		except Exception as e:
-			print(dlon, dlat)
-			print(nclon)
-			print(nclat)
 			print(e)
 
 	for f in glob.glob("*.nc"):
