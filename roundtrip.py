@@ -98,7 +98,7 @@ for metaID in metaIDs:
 			measurements[6] = numpy.float64(measurements[6])/1000000000
 			for i in range(len(measurements)):
 				if not numpy.isnan(casts[i](d['data'][0][i])) and measurements[i] != casts[i](d['data'][0][i]):
-					message += f'{data_keys[i]} doesnt match. netCDF: {measurements[i]}, {type(measurements[i])}, mongo: {casts[i](d['data'][0][i])}, {type(casts[i](d['data'][0][i]))}/n'
+					message += f'{data_keys[i]} doesnt match. netCDF: {measurements[i]}, {type(measurements[i])}, mongo: {casts[i](d["data"][0][i])}, {type(casts[i](d["data"][0][i]))}/n'
 					suppressMessage = False
 				elif numpy.isnan(casts[i](d['data'][0][i])):
 					if measurements[i] != -1e34:
@@ -109,7 +109,7 @@ for metaID in metaIDs:
 
 	if not suppressMessage:
 		print(message)
-		
+
 	for f in glob.glob("*.nc"):
 		os.remove(f)
 
