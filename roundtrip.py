@@ -31,7 +31,7 @@ def parse_date(timestamp):
 	try:
 		return datetime.datetime.utcfromtimestamp(int(timestamp)/1e9)
 	except:
-		print('raw', timestamp, type(timestamp))
+		#print('raw', timestamp, type(timestamp))
 		return None
 
 def stringparse(s):
@@ -44,6 +44,8 @@ for metaID in metaIDs:
 	# get metadata doc and all corresponding data docs
 	drifters = list(db.drifter.find({"metadata": metaID}))
 	m = list(db.drifterMeta.find({"_id": metaID}))[0]
+	message = ''
+	suppressMessage = False
 
 	# get upstream netcdf file
 	fileOpenFail = False
@@ -87,7 +89,7 @@ for metaID in metaIDs:
 
 	## data
 	for d in drifters:
-		print(f'Checking data record {d["_id"]}')
+		message+= f'Checking data record {d["_id"]}\n'
 		try:
 			index = int(d['_id'].split('_')[1])
 			data_keys = ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
@@ -96,15 +98,18 @@ for metaID in metaIDs:
 			measurements[6] = numpy.float64(measurements[6])/1000000000
 			for i in range(len(measurements)):
 				if not numpy.isnan(casts[i](d['data'][0][i])) and measurements[i] != casts[i](d['data'][0][i]):
-					print(data_keys[i], 'doesnt match. netCDF:', measurements[i], type(measurements[i]), 'mongo:', casts[i](d['data'][0][i]), type(casts[i](d['data'][0][i])))
+					message += f'{data_keys[i]} doesnt match. netCDF: {measurements[i]}, {type(measurements[i])}, mongo: {casts[i](d['data'][0][i])}, {type(casts[i](d['data'][0][i]))}/n'
+					suppressMessage = False
 				elif numpy.isnan(casts[i](d['data'][0][i])):
 					if measurements[i] != -1e34:
-						print(f'Got numpy.nan from mongo but saw {measurements[i]} in netcdf')
-
-
+						message += f'Got numpy.nan from mongo but saw {measurements[i]} in netcdf'
+						suppressMessage = False
 		except Exception as e:
 			print(e)
 
+	if not suppressMessage:
+		print(message)
+		
 	for f in glob.glob("*.nc"):
 		os.remove(f)
 
