@@ -45,7 +45,7 @@ for metaID in metaIDs:
 	drifters = list(db.drifter.find({"metadata": metaID}))
 	m = list(db.drifterMeta.find({"_id": metaID}))[0]
 	message = ''
-	suppressMessage = False
+	suppressMessage = True
 
 	# get upstream netcdf file
 	fileOpenFail = False
