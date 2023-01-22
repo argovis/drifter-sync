@@ -80,7 +80,7 @@ meta = {
 	"measurement_metadata": [
 		data_keys,
 		['units', 'long_name'],
-		[[["m/s", "Eastward velocity",],["m/s", "Northward velocity",],["degrees_east", "95% confidence interval in longitude",],["degrees_north", "95% confidence interval in latitude",],["m/s", "95% confidence interval in eastward velocity",],["m/s", "95% confidence interval in northward velocity",],["seconds", "time interval between previous and next location fix",],["Kelvin", "fitted sea water temperature",],["Kelvin", "fitted non-diurnal sea water temperature",],["Kelvin", "fitted diurnal sea water temperature anomaly",],["Kelvin", "standard uncertainty of fitted sea water temperature",],["Kelvin", "standard uncertainty of fitted non-diurnal sea water temperature",],["Kelvin", "standard uncertainty of fitted diurnal sea water temperature anomaly",],[None, "fitted sea water temperature quality flag",],[None, "fitted non-diurnal sea water temperature quality flag",],[None,"fitted diurnal sea water temperature anomaly quality flag"]]]
+		[["m/s", "Eastward velocity",],["m/s", "Northward velocity",],["degrees_east", "95% confidence interval in longitude",],["degrees_north", "95% confidence interval in latitude",],["m/s", "95% confidence interval in eastward velocity",],["m/s", "95% confidence interval in northward velocity",],["seconds", "time interval between previous and next location fix",],["Kelvin", "fitted sea water temperature",],["Kelvin", "fitted non-diurnal sea water temperature",],["Kelvin", "fitted diurnal sea water temperature anomaly",],["Kelvin", "standard uncertainty of fitted sea water temperature",],["Kelvin", "standard uncertainty of fitted non-diurnal sea water temperature",],["Kelvin", "standard uncertainty of fitted diurnal sea water temperature anomaly",],[None, "fitted sea water temperature quality flag",],[None, "fitted non-diurnal sea water temperature quality flag",],[None,"fitted diurnal sea water temperature anomaly quality flag"]]
 	]
 }
 
@@ -124,7 +124,7 @@ for i in range(meta['rowsize']):
 			point['data'][0][i] = None
 
 	# transpose drifter.data
-	point['data'] = {data_keys[i]: list(x) for i, x in enumerate(zip(*point['data']))}
+	point['data'] = [list(x) for i, x in enumerate(zip(*point['data']))]
 
 	try:
 		db['drifter'].insert_one(point)
