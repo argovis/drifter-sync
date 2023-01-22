@@ -54,6 +54,7 @@ def getprop(ds, var, prop):
         return None
 
 ds = xarray.open_dataset(sys.argv[1], decode_times=False)
+data_keys = ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
 
 # generate metadata object - one per drifer file
 meta = {
@@ -76,17 +77,20 @@ meta = {
 		"source": ["gdp"],
 		"url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1],
 	}],
-	"data_keys": ["ve", "vn", "err_lon", "err_lat", "err_ve", "err_vn", "gap", "sst", "sst1", "sst2", "err_sst", "err_sst1", "err_sst2", "flg_sst", "flg_sst1", "flg_sst2"]
+	"measurement_metadata": [
+		data_keys,
+		['units', 'long_name'],
+		[[["m/s", "Eastward velocity",],["m/s", "Northward velocity",],["degrees_east", "95% confidence interval in longitude",],["degrees_north", "95% confidence interval in latitude",],["m/s", "95% confidence interval in eastward velocity",],["m/s", "95% confidence interval in northward velocity",],["seconds", "time interval between previous and next location fix",],["Kelvin", "fitted sea water temperature",],["Kelvin", "fitted non-diurnal sea water temperature",],["Kelvin", "fitted diurnal sea water temperature anomaly",],["Kelvin", "standard uncertainty of fitted sea water temperature",],["Kelvin", "standard uncertainty of fitted non-diurnal sea water temperature",],["Kelvin", "standard uncertainty of fitted diurnal sea water temperature anomaly",],[None, "fitted sea water temperature quality flag",],[None, "fitted non-diurnal sea water temperature quality flag",],[None,"fitted diurnal sea water temperature anomaly quality flag"]]]
+	]
 }
-meta['units'] = [getprop(ds,v,'units') for v in meta['data_keys']]
-meta['long_name'] = [getprop(ds,v,'long_name') for v in meta['data_keys']]
+
 try:
 	meta['deploy_date'] = parse_date(round(float(ds.deploy_date.data[0]),6))
 except:
 	meta['deploy_date'] = None
 
 try:
-	db['drifterMetax'].insert_one(meta)
+	db['drifterMeta'].insert_one(meta)
 except BaseException as err:
 	print('error: db write failure')
 	print(err)
@@ -118,8 +122,12 @@ for i in range(meta['rowsize']):
 			point['data'][0][i] = float(point['data'][0][i])
 		if point['data'][0][i] == -1e34:
 			point['data'][0][i] = None
+
+	# transpose drifter.data
+	point['data'] = {data_keys[i]: list(x) for i, x in enumerate(zip(*point['data']))}
+
 	try:
-		db['drifterx'].insert_one(point)
+		db['drifter'].insert_one(point)
 	except BaseException as err:
 		print('error: db write failure')
 		print(err)
