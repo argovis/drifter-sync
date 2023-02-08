@@ -77,7 +77,7 @@ meta = {
 		"source": ["gdp"],
 		"url": 'https://www.aoml.noaa.gov/ftp/pub/phod/lumpkin/hourly/v2.00/netcdf/' + sys.argv[1].split('/')[-1],
 	}],
-	"measurement_metadata": [
+	"data_info": [
 		data_keys,
 		['units', 'long_name'],
 		[["m/s", "Eastward velocity",],["m/s", "Northward velocity",],["degrees_east", "95% confidence interval in longitude",],["degrees_north", "95% confidence interval in latitude",],["m/s", "95% confidence interval in eastward velocity",],["m/s", "95% confidence interval in northward velocity",],["seconds", "time interval between previous and next location fix",],["Kelvin", "fitted sea water temperature",],["Kelvin", "fitted non-diurnal sea water temperature",],["Kelvin", "fitted diurnal sea water temperature anomaly",],["Kelvin", "standard uncertainty of fitted sea water temperature",],["Kelvin", "standard uncertainty of fitted non-diurnal sea water temperature",],["Kelvin", "standard uncertainty of fitted diurnal sea water temperature anomaly",],[None, "fitted sea water temperature quality flag",],[None, "fitted non-diurnal sea water temperature quality flag",],[None,"fitted diurnal sea water temperature anomaly quality flag"]]
@@ -100,7 +100,7 @@ except BaseException as err:
 for i in range(meta['rowsize']):
 	point = {
 		"_id": ds.ID.data[0].decode("utf-8").strip() + '_' + str(i),
-		"metadata": ds.ID.data[0].decode("utf-8").strip(),
+		"metadata": [ds.ID.data[0].decode("utf-8").strip()],
 		"geolocation": {
 			"type": "Point",
 			"coordinates": [round(float(ds.longitude.data[0][i]),6), round(float(ds.latitude.data[0][i]),6)]
