@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 # --- raw file retrieval -----------------------------------
 # inherited from https://github.com/Cloud-Drift/earthcube-meeting-2022/blob/main/PM_05_Accelerating_Lagrangian_analyses_of_oceanic_data_benchmarking_typical_workflows.ipynb
-subset_nb_drifters = 100  # you can scale up/down this number (maximum value of 17324)
+subset_nb_drifters = 17324  # you can scale up/down this number (maximum value of 17324)
 # output folder and official GDP https server
 # Note: If you are running this notebook on a local computer and have already downloaded the individual NetCDF files 
 # independently of this notebook, you can move/copy these files to the folder destination shown below, 
