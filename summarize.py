@@ -42,7 +42,7 @@ def get_timestamp_range(db, collection_name):
 
 datasets = {
     # metagroups: indexed fields to allow rate limiter cost discounts for; corresponds more or less to the special fields listed in each dataset's service's local_filter and metafilter
-    'drifter': {'metagroups': ['_id', 'metadata', 'wmo', 'platform'], 'startDate': None, 'endDate': None}, # drifters live in an independent deployment, do this over there
+    'drifters': {'metagroups': ['id', 'metadata', 'wmo', 'platform'], 'startDate': None, 'endDate': None}, # drifters live in an independent deployment, do this over there
 
 }
 
